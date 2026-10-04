@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>IoT Daily Intelligence</title>
+
+
+    <!-- Chart.js -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f6f8;
+
+            color: #222;
+        }
+
+
+        header {
+
+            background: #1f2937;
+
+            color: white;
+
+            padding: 25px;
+
+            text-align: center;
+        }
+
+
+        header h1 {
+
+            margin: 0;
+
+            font-size: 30px;
+        }
+
+
+        header p {
+
+            margin-top: 8px;
+
+            color: #d1d5db;
+        }
+
+
+        .container {
+
+            width: 95%;
+
+            max-width: 1200px;
+
+            margin: 25px auto;
+        }
+
+
+        /* -------------------------
+           Sensor Cards
+        ------------------------- */
+
+        .cards {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(200px, 1fr));
+
+            gap: 20px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .card {
+
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+
+        .sensor-card {
+
+            text-align: center;
+        }
+
+
+        .sensor-card h3 {
+
+            margin-top: 0;
+
+            color: #555;
+        }
+
+
+        .sensor-value {
+
+            font-size: 30px;
+
+            font-weight: bold;
+
+            margin-top: 10px;
+        }
+
+
+        /* -------------------------
+           Charts
+        ------------------------- */
+
+        .charts {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(300px, 1fr));
+
+            gap: 20px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .chart-container {
+
+            height: 300px;
+        }
+
+
+        /* -------------------------
+           AI Section
+        ------------------------- */
+
+        .ai-card {
+
+            margin-top: 25px;
+
+            padding: 25px;
+        }
+
+
+        .ai-card h2 {
+
+            margin-top: 0;
+
+            color: #111827;
+        }
+
+
+        #ai-analysis {
+
+            background: #f8fafc;
+
+            border-radius: 10px;
+
+            padding: 20px;
+
+            margin: 15px 0;
+
+            line-height: 1.7;
+
+            font-size: 16px;
+        }
+
+
+        .ai-button {
+
+            border: none;
+
+            padding: 12px 20px;
+
+            border-radius: 8px;
+
+            background: #2563eb;
+
+            color: white;
+
+            font-size: 15px;
+
+            cursor: pointer;
+        }
+
+
+        .ai-button:hover {
+
+            background: #1d4ed8;
+        }
+
+
+        /* -------------------------
+           Latest Reading
+        ------------------------- */
+
+        .latest {
+
+            margin-bottom: 25px;
+        }
+
+
+        .latest p {
+
+            margin: 8px 0;
+        }
+
+
+        /* -------------------------
+           Status
+        ------------------------- */
+
+        #status {
+
+            text-align: center;
+
+            margin: 15px;
+
+            color: #666;
+        }
+
+
+        /* -------------------------
+           Mobile
+        ------------------------- */
+
+        @media (max-width: 600px) {
+
+            header h1 {
+
+                font-size: 24px;
+            }
+
+            .sensor-value {
+
+                font-size: 25px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =================================
+         HEADER
+    ================================== -->
+
+    <header>
+
+        <h1>🌦️ IoT Daily Intelligence</h1>
+
+        <p>
+            ESP32 Environmental Monitoring Dashboard
+        </p>
+
+    </header>
+
+
+    <div class="container">
+
+
+        <!-- =================================
+             SENSOR CARDS
+        ================================== -->
+
+        <div class="cards">
+
+
+            <!-- Temperature -->
+
+            <div class="card sensor-card">
+
+                <h3>🌡️ Temperature</h3>
+
+                <div
+                    id="temperature"
+                    class="sensor-value">
+                    -- °C
+                </div>
+
+            </div>
+
+
+            <!-- Humidity -->
+
+            <div class="card sensor-card">
+
+                <h3>💧 Humidity</h3>
+
+                <div
+                    id="humidity"
+                    class="sensor-value">
+                    -- %
+                </div>
+
+            </div>
+
+
+            <!-- Pressure -->
+
+            <div class="card sensor-card">
+
+                <h3>🌍 Pressure</h3>
+
+                <div
+                    id="pressure"
+                    class="sensor-value">
+                    -- hPa
+                </div>
+
+            </div>
+
+
+            <!-- MQ135 -->
+
+            <div class="card sensor-card">
+
+                <h3>🫁 MQ135</h3>
+
+                <div
+                    id="mq135"
+                    class="sensor-value">
+                    --
+                </div>
+
+            </div>
+
+
+            <!-- Rain -->
+
+            <div class="card sensor-card">
+
+                <h3>🌧️ Rain</h3>
+
+                <div
+                    id="rain"
+                    class="sensor-value">
+                    --
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================
+             LATEST READING
+        ================================== -->
+
+        <div class="card latest">
+
+            <h2>📊 Latest Reading</h2>
+
+            <p>
+                <strong>Time:</strong>
+
+                <span id="latest-time">
+                    --
+                </span>
+            </p>
+
+            <p>
+                <strong>Temperature:</strong>
+
+                <span id="latest-temperature">
+                    --
+                </span>
+            </p>
+
+            <p>
+                <strong>Humidity:</strong>
+
+                <span id="latest-humidity">
+                    --
+                </span>
+            </p>
+
+            <p>
+                <strong>Pressure:</strong>
+
+                <span id="latest-pressure">
+                    --
+                </span>
+            </p>
+
+            <p>
+                <strong>MQ135 Raw:</strong>
+
+                <span id="latest-mq135">
+                    --
+                </span>
+            </p>
+
+            <p>
+                <strong>Rain:</strong>
+
+                <span id="latest-rain">
+                    --
+                </span>
+            </p>
+
+        </div>
+
+
+        <!-- =================================
+             CHARTS
+        ================================== -->
+
+        <div class="charts">
+
+
+            <!-- Temperature Chart -->
+
+            <div class="card">
+
+                <h2>🌡️ Temperature</h2>
+
+                <div class="chart-container">
+
+                    <canvas id="temperatureChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <!-- Humidity Chart -->
+
+            <div class="card">
+
+                <h2>💧 Humidity</h2>
+
+                <div class="chart-container">
+
+                    <canvas id="humidityChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <!-- Pressure Chart -->
+
+            <div class="card">
+
+                <h2>🌍 Pressure</h2>
+
+                <div class="chart-container">
+
+                    <canvas id="pressureChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================
+             AI ANALYSIS
+        ================================== -->
+
+        <div class="card ai-card">
+
+            <h2>
+                🤖 AI Environmental Intelligence
+            </h2>
+
+
+            <div id="ai-analysis">
+
+                🤖 Gemini is analyzing your
+                sensor data...
+
+            </div>
+
+
+            <button
+                class="ai-button"
+                onclick="getAIAnalysis()">
+
+                🔄 Refresh AI Analysis
+
+            </button>
+
+        </div>
+
+
+        <!-- =================================
+             STATUS
+        ================================== -->
+
+        <div id="status">
+
+            Connecting to sensor database...
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =================================
+         JAVASCRIPT
+    ================================== -->
+
+    <script>
+
+
+        // ---------------------------------
+        // Chart variables
+        // ---------------------------------
+
+        let temperatureChart;
+
+        let humidityChart;
+
+        let pressureChart;
+
+
+        // ---------------------------------
+        // Load sensor data
+        // ---------------------------------
+
+        async function loadSensorData() {
+
+            try {
+
+                const response =
+                    await fetch("/dashboard");
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data || data.length === 0) {
+
+                    document.getElementById("status")
+                        .innerText =
+                        "No sensor data available.";
+
+                    return;
+                }
+
+
+                // Latest reading
+
+                const latest = data[0];
+
+
+                // ---------------------------------
+                // Update sensor cards
+                // ---------------------------------
+
+                document.getElementById("temperature")
+                    .innerText =
+                    Number(latest.temperature).toFixed(1)
+                    + " °C";
+
+
+                document.getElementById("humidity")
+                    .innerText =
+                    Number(latest.humidity).toFixed(1)
+                    + " %";
+
+
+                document.getElementById("pressure")
+                    .innerText =
+                    Number(latest.pressure).toFixed(1)
+                    + " hPa";
+
+
+                document.getElementById("mq135")
+                    .innerText =
+                    latest.mq135;
+
+
+                document.getElementById("rain")
+                    .innerText =
+                    latest.rain
+                    ? "🌧️ YES"
+                    : "☀️ NO";
+
+
+                // ---------------------------------
+                // Latest reading
+                // ---------------------------------
+
+                document.getElementById("latest-time")
+                    .innerText =
+                    new Date(latest.created_at)
+                    .toLocaleString();
+
+
+                document.getElementById("latest-temperature")
+                    .innerText =
+                    Number(latest.temperature).toFixed(1)
+                    + " °C";
+
+
+                document.getElementById("latest-humidity")
+                    .innerText =
+                    Number(latest.humidity).toFixed(1)
+                    + " %";
+
+
+                document.getElementById("latest-pressure")
+                    .innerText =
+                    Number(latest.pressure).toFixed(1)
+                    + " hPa";
+
+
+                document.getElementById("latest-mq135")
+                    .innerText =
+                    latest.mq135;
+
+
+                document.getElementById("latest-rain")
+                    .innerText =
+                    latest.rain
+                    ? "Rain detected"
+                    : "No rain";
+
+
+                // ---------------------------------
+                // Prepare chart data
+                // ---------------------------------
+
+                const history =
+                    [...data].reverse();
+
+
+                const labels =
+                    history.map(item => {
+
+                        return new Date(
+                            item.created_at
+                        ).toLocaleTimeString();
+
+                    });
+
+
+                const temperatures =
+                    history.map(item =>
+                        Number(item.temperature)
+                    );
+
+
+                const humidities =
+                    history.map(item =>
+                        Number(item.humidity)
+                    );
+
+
+                const pressures =
+                    history.map(item =>
+                        Number(item.pressure)
+                    );
+
+
+                // ---------------------------------
+                // Update charts
+                // ---------------------------------
+
+                updateTemperatureChart(
+                    labels,
+                    temperatures
+                );
+
+
+                updateHumidityChart(
+                    labels,
+                    humidities
+                );
+
+
+                updatePressureChart(
+                    labels,
+                    pressures
+                );
+
+
+                document.getElementById("status")
+                    .innerText =
+                    "✅ Connected • Data updates every 5 seconds";
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                document.getElementById("status")
+                    .innerText =
+                    "❌ Unable to load sensor data.";
+
+            }
+
+        }
+
+
+        // ---------------------------------
+        // Temperature chart
+        // ---------------------------------
+
+        function updateTemperatureChart(
+            labels,
+            values
+        ) {
+
+            const ctx =
+                document.getElementById(
+                    "temperatureChart"
+                ).getContext("2d");
+
+
+            if (temperatureChart) {
+
+                temperatureChart.destroy();
+
+            }
+
+
+            temperatureChart =
+                new Chart(ctx, {
+
+                    type: "line",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+
+                            label:
+                                "Temperature (°C)",
+
+                            data: values,
+
+                            tension: 0.3,
+
+                            fill: false
+
+                        }]
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false
+
+                    }
+
+                });
+
+        }
+
+
+        // ---------------------------------
+        // Humidity chart
+        // ---------------------------------
+
+        function updateHumidityChart(
+            labels,
+            values
+        ) {
+
+            const ctx =
+                document.getElementById(
+                    "humidityChart"
+                ).getContext("2d");
+
+
+            if (humidityChart) {
+
+                humidityChart.destroy();
+
+            }
+
+
+            humidityChart =
+                new Chart(ctx, {
+
+                    type: "line",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+
+                            label:
+                                "Humidity (%)",
+
+                            data: values,
+
+                            tension: 0.3,
+
+                            fill: false
+
+                        }]
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false
+
+                    }
+
+                });
+
+        }
+
+
+        // ---------------------------------
+        // Pressure chart
+        // ---------------------------------
+
+        function updatePressureChart(
+            labels,
+            values
+        ) {
+
+            const ctx =
+                document.getElementById(
+                    "pressureChart"
+                ).getContext("2d");
+
+
+            if (pressureChart) {
+
+                pressureChart.destroy();
+
+            }
+
+
+            pressureChart =
+                new Chart(ctx, {
+
+                    type: "line",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+
+                            label:
+                                "Pressure (hPa)",
+
+                            data: values,
+
+                            tension: 0.3,
+
+                            fill: false
+
+                        }]
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false
+
+                    }
+
+                });
+
+        }
+
+
+        // ---------------------------------
+        // Gemini AI
+        // ---------------------------------
+
+        async function getAIAnalysis() {
+
+            const box =
+                document.getElementById(
+                    "ai-analysis"
+                );
+
+
+            box.innerHTML =
+                "🤖 Gemini is analyzing sensor data...";
+
+
+            try {
+
+                const response =
+                    await fetch("/ai-analysis");
+
+
+                const data =
+                    await response.json();
+
+
+                if (data.error) {
+
+                    box.innerHTML =
+                        "❌ " + data.error;
+
+                    return;
+                }
+
+
+                // Convert new lines to HTML
+
+                box.innerHTML =
+                    data.analysis
+                    .replace(/\n/g, "<br>");
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                box.innerHTML =
+                    "❌ Unable to get AI analysis.";
+
+            }
+
+        }
+
+
+        // ---------------------------------
+        // Initial loading
+        // ---------------------------------
+
+        loadSensorData();
+
+        getAIAnalysis();
+
+
+        // ---------------------------------
+        // Sensor refresh
+        // Every 5 seconds
+        // ---------------------------------
+
+        setInterval(
+            loadSensorData,
+            5000
+        );
+
+
+        // ---------------------------------
+        // AI refresh
+        // Every 30 seconds
+        // ---------------------------------
+
+        setInterval(
+            getAIAnalysis,
+            30000
+        );
+
+
+    </script>
+
+
+</body>
+
+</html>
